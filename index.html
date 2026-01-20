@@ -292,7 +292,7 @@
         const seat = elements.seat.value;
         const infoText = `${wind}${round}국 ${turn}순 ${seat}  도라`;
 
-        const doraCode = parseTiles(elements.dora.value)[0] || null;
+        const doraCodes = parseTiles(elements.dora.value).slice(0, 4);
         const handTiles = parseTiles(elements.hand.value);
         const nakiText = elements.naki.value.trim();
         const nakiSets = nakiText ? nakiText.split(/\s+/) : [];
@@ -301,8 +301,15 @@
         context.font = '500 26px "Noto Sans KR"';
         const textWidth = context.measureText(infoText).width;
 
-        const topGap = 10;
-        const topBlockWidth = textWidth + (doraCode ? topGap + doraWidth : 0);
+        const doraTextGap = 10;
+        const doraTileGap = 0;
+        const topBlockWidth =
+          textWidth +
+          (doraCodes.length
+            ? doraTextGap +
+              doraCodes.length * doraWidth +
+              (doraCodes.length - 1) * doraTileGap
+            : 0);
 
         let topStartX = (canvas.width - topBlockWidth) / 2;
         const topY = 60;
@@ -312,32 +319,36 @@
         context.textAlign = "left";
         context.fillText(infoText, topStartX, topY);
 
-        if (doraCode) {
-          const doraImage = await loadImage(doraCode);
-          const doraX = topStartX + textWidth + topGap;
+        if (doraCodes.length) {
+          let doraX = topStartX + textWidth + doraTextGap;
           const doraY = topY - doraHeight / 2;
 
-          context.save();
-          context.shadowColor = "rgba(0, 0, 0, 0.15)";
-          context.shadowBlur = 4;
-          context.shadowOffsetY = 2;
+          for (const doraCode of doraCodes) {
+            const doraImage = await loadImage(doraCode);
 
-          roundRect(doraX, doraY, doraWidth, doraHeight, 4);
-          context.fillStyle = "#ffffff";
-          context.fill();
+            context.save();
+            context.shadowColor = "rgba(0, 0, 0, 0.15)";
+            context.shadowBlur = 4;
+            context.shadowOffsetY = 2;
 
-          context.save();
-          context.clip();
-          if (doraImage) {
-            context.drawImage(doraImage, doraX, doraY, doraWidth, doraHeight);
+            roundRect(doraX, doraY, doraWidth, doraHeight, 4);
+            context.fillStyle = "#ffffff";
+            context.fill();
+
+            context.save();
+            context.clip();
+            if (doraImage) {
+              context.drawImage(doraImage, doraX, doraY, doraWidth, doraHeight);
+            }
+            context.restore();
+
+            context.strokeStyle = "#bcbcbc";
+            context.lineWidth = 0.5;
+            context.stroke();
+
+            context.restore();
+            doraX += doraWidth + doraTileGap;
           }
-          context.restore();
-
-          context.strokeStyle = "#bcbcbc";
-          context.lineWidth = 0.5;
-          context.stroke();
-
-          context.restore();
         }
 
         let totalHandWidth = handTiles.length * tileWidth;
