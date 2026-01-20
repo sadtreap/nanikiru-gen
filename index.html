@@ -351,55 +351,90 @@
           }
         }
 
+        const handGap = 20;
+        const nakiGap = 10;
+        const tileShadowBlur = 10;
+        const tileShadowOffsetX = 2;
+        const tileShadowOffsetY = 5;
         let totalHandWidth = handTiles.length * tileWidth;
         if (nakiTileSets.length > 0) {
-          totalHandWidth += 20;
+          totalHandWidth += handGap;
           for (const tiles of nakiTileSets) {
-            totalHandWidth += tiles.length * tileWidth + 10;
+            totalHandWidth += tiles.length * tileWidth + nakiGap;
           }
         }
 
-        let currentX = (canvas.width - totalHandWidth) / 2;
-        const handY = 100;
+        const handPadding = tileShadowBlur + Math.max(0, tileShadowOffsetX);
+        const maxHandWidth = Math.max(1, canvas.width - handPadding * 2);
+        const handScale =
+          totalHandWidth > maxHandWidth ? maxHandWidth / totalHandWidth : 1;
+        const scaledTileWidth = tileWidth * handScale;
+        const scaledTileHeight = tileHeight * handScale;
+        const scaledRadius = radius * handScale;
+        const scaledHandGap = handGap * handScale;
+        const scaledNakiGap = nakiGap * handScale;
+        const scaledShadowBlur = tileShadowBlur * handScale;
+        const scaledShadowOffsetX = tileShadowOffsetX * handScale;
+        const scaledShadowOffsetY = tileShadowOffsetY * handScale;
+
+        const scaledHandWidth = totalHandWidth * handScale;
+        let currentX = (canvas.width - scaledHandWidth) / 2;
+        const handY = 100 + (tileHeight - scaledTileHeight) / 2;
 
         for (const code of handTiles) {
           await drawRoundedTile(
             code,
             currentX,
             handY,
-            tileWidth,
-            tileHeight,
-            radius,
+            scaledTileWidth,
+            scaledTileHeight,
+            scaledRadius,
+            scaledShadowBlur,
+            scaledShadowOffsetX,
+            scaledShadowOffsetY,
           );
-          currentX += tileWidth;
+          currentX += scaledTileWidth;
         }
 
         if (nakiTileSets.length > 0) {
-          currentX += 20;
+          currentX += scaledHandGap;
           for (const tiles of nakiTileSets) {
             for (const code of tiles) {
               await drawRoundedTile(
                 code,
                 currentX,
                 handY,
-                tileWidth,
-                tileHeight,
-                radius,
+                scaledTileWidth,
+                scaledTileHeight,
+                scaledRadius,
+                scaledShadowBlur,
+                scaledShadowOffsetX,
+                scaledShadowOffsetY,
               );
-              currentX += tileWidth;
+              currentX += scaledTileWidth;
             }
-            currentX += 10;
+            currentX += scaledNakiGap;
           }
         }
       }
 
-      async function drawRoundedTile(code, x, y, width, height, cornerRadius) {
+      async function drawRoundedTile(
+        code,
+        x,
+        y,
+        width,
+        height,
+        cornerRadius,
+        shadowBlur,
+        shadowOffsetX,
+        shadowOffsetY,
+      ) {
         const image = await loadImage(code);
         context.save();
         context.shadowColor = "rgba(0, 0, 0, 0.4)";
-        context.shadowBlur = 10;
-        context.shadowOffsetX = 2;
-        context.shadowOffsetY = 5;
+        context.shadowBlur = shadowBlur;
+        context.shadowOffsetX = shadowOffsetX;
+        context.shadowOffsetY = shadowOffsetY;
 
         roundRect(x, y, width, height, cornerRadius);
         context.fillStyle = "#ffffff";
