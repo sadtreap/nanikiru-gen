@@ -420,7 +420,7 @@
       function downloadImage() {
         const link = document.createElement("a");
         const now = new Date();
-        const fileName = `nanikiru_${now.getHours()}${now.getMinutes()}${now.getSeconds()}.png`;
+        const fileName = `nanikiru_${String(now.getHours()).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}${String(now.getSeconds()).padStart(2, "0")}.png`;
 
         link.download = fileName;
         link.href = canvas.toDataURL("image/png");
